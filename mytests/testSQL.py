@@ -1,21 +1,28 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from sqlalchemy import (
-    Column,
-    Float,
-    Integer,
-    MetaData,
-    String,
-    Table,
     create_engine,
+    MetaData,
+    Table,
+    Column,
+    String,
+    Integer,
+    Float,
     insert,
     inspect,
     text,
 )
 
-
 engine = create_engine("sqlite:///:memory:")
 metadata_obj = MetaData()
 
-# create city SQL table
+def insert_rows_into_table(rows, table, engine=engine):
+    for row in rows:
+        stmt = insert(table).values(**row)
+        with engine.begin() as connection:
+            connection.execute(stmt)
+
 table_name = "receipts"
 receipts = Table(
     table_name,
@@ -33,10 +40,7 @@ rows = [
     {"receipt_id": 3, "customer_name": "Woodrow Wilson", "price": 53.43, "tip": 5.43},
     {"receipt_id": 4, "customer_name": "Margaret James", "price": 21.11, "tip": 1.00},
 ]
-for row in rows:
-    stmt = insert(receipts).values(**row)
-    with engine.begin() as connection:
-        cursor = connection.execute(stmt)
+insert_rows_into_table(rows, receipts)
 
 inspector = inspect(engine)
 columns_info = [(col["name"], col["type"]) for col in inspector.get_columns("receipts")]
@@ -45,7 +49,6 @@ table_description = "Columns:\n" + "\n".join([f"  - {name}: {col_type}" for name
 print(table_description)
 
 from smolagents import tool
-
 
 @tool
 def sql_engine(query: str) -> str:
@@ -68,7 +71,6 @@ def sql_engine(query: str) -> str:
             output += "\n" + str(row)
     return output
 
-
 from smolagents import CodeAgent, OpenAIServerModel
 
 model = OpenAIServerModel(
@@ -77,9 +79,50 @@ model = OpenAIServerModel(
         api_key="your-api-key",  # replace with API key if necessary
     )
 
-
 agent = CodeAgent(
     tools=[sql_engine],
     model=model,
 )
 agent.run("Can you give me the name of the client who got the most expensive receipt?")
+
+
+table_name = "waiters"
+waiters = Table(
+    table_name,
+    metadata_obj,
+    Column("receipt_id", Integer, primary_key=True),
+    Column("waiter_name", String(16), primary_key=True),
+)
+metadata_obj.create_all(engine)
+
+rows = [
+    {"receipt_id": 1, "waiter_name": "Corey Johnson"},
+    {"receipt_id": 2, "waiter_name": "Michael Watts"},
+    {"receipt_id": 3, "waiter_name": "Michael Watts"},
+    {"receipt_id": 4, "waiter_name": "Margaret James"},
+]
+insert_rows_into_table(rows, waiters)
+
+updated_description = """Allows you to perform SQL queries on the table. Beware that this tool's output is a string representation of the execution output.
+It can use the following tables:"""
+
+inspector = inspect(engine)
+for table in ["receipts", "waiters"]:
+    columns_info = [(col["name"], col["type"]) for col in inspector.get_columns(table)]
+
+    table_description = f"Table '{table}':\n"
+
+    table_description += "Columns:\n" + "\n".join([f"  - {name}: {col_type}" for name, col_type in columns_info])
+    updated_description += "\n\n" + table_description
+
+print(updated_description)
+
+
+sql_engine.description = updated_description
+
+agent = CodeAgent(
+    tools=[sql_engine],
+    model=model,
+)
+
+agent.run("Which waiter got more total money from tips?")

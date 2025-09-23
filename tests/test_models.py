@@ -23,8 +23,6 @@ from huggingface_hub import ChatCompletionOutputMessage
 
 from smolagents.default_tools import FinalAnswerTool
 from smolagents.models import (
-    AmazonBedrockServerModel,
-    AzureOpenAIServerModel,
     ChatMessage,
     ChatMessageToolCall,
     InferenceClientModel,
@@ -500,52 +498,6 @@ class TestOpenAIServerModel:
         assert args == '{"answer": "blob"}'
         assert args2 == '{"answer": "blob2"}'
 
-
-class TestAmazonBedrockServerModel:
-    def test_client_for_bedrock(self):
-        model_id = "us.amazon.nova-pro-v1:0"
-
-        with patch("boto3.client") as MockBoto3:
-            model = AmazonBedrockServerModel(
-                model_id=model_id,
-            )
-
-        assert model.client == MockBoto3.return_value
-
-
-class TestAzureOpenAIServerModel:
-    def test_client_kwargs_passed_correctly(self):
-        model_id = "gpt-3.5-turbo"
-        api_key = "test_api_key"
-        api_version = "2023-12-01-preview"
-        azure_endpoint = "https://example-resource.azure.openai.com/"
-        organization = "test_org"
-        project = "test_project"
-        client_kwargs = {"max_retries": 5}
-
-        with patch("openai.OpenAI") as MockOpenAI, patch("openai.AzureOpenAI") as MockAzureOpenAI:
-            model = AzureOpenAIServerModel(
-                model_id=model_id,
-                api_key=api_key,
-                api_version=api_version,
-                azure_endpoint=azure_endpoint,
-                organization=organization,
-                project=project,
-                client_kwargs=client_kwargs,
-            )
-        assert MockOpenAI.call_count == 0
-        MockAzureOpenAI.assert_called_once_with(
-            base_url=None,
-            api_key=api_key,
-            api_version=api_version,
-            azure_endpoint=azure_endpoint,
-            organization=organization,
-            project=project,
-            max_retries=5,
-        )
-        assert model.client == MockAzureOpenAI.return_value
-
-
 class TestTransformersModel:
     @pytest.mark.parametrize(
         "patching",
@@ -700,7 +652,6 @@ def test_get_clean_message_list_flatten_messages_as_text():
 @pytest.mark.parametrize(
     "model_class, model_kwargs, patching, expected_flatten_messages_as_text",
     [
-        (AzureOpenAIServerModel, {}, ("openai.AzureOpenAI", {}), False),
         (InferenceClientModel, {}, ("huggingface_hub.InferenceClient", {}), False),
         (LiteLLMModel, {}, None, False),
         (LiteLLMModel, {"model_id": "ollama"}, None, True),

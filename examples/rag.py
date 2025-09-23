@@ -52,13 +52,19 @@ class RetrieverTool(Tool):
         )
 
 
-from smolagents import CodeAgent, InferenceClientModel
+from smolagents import CodeAgent, OpenAIServerModel
+
+model = OpenAIServerModel(
+        model_id="qwen3-30b-a3b-instruct-2507-mlx",
+        api_base="http://localhost:1234/v1",  # replace with remote open-ai compatible server if necessary
+        api_key="your-api-key",  # replace with API key if necessary
+    )
 
 
 retriever_tool = RetrieverTool(docs_processed)
 agent = CodeAgent(
     tools=[retriever_tool],
-    model=InferenceClientModel(model_id="Qwen/Qwen2.5-Coder-32B-Instruct"),
+    model=model,
     max_steps=4,
     verbosity_level=2,
     stream_outputs=True,

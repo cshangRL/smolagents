@@ -17,7 +17,13 @@ from textwrap import dedent
 from mcp import StdioServerParameters
 
 from smolagents import CodeAgent, InferenceClientModel, LiteLLMModel, MCPClient  # noqa: F401
+from smolagents import OpenAIServerModel
 
+model = OpenAIServerModel(
+        model_id="qwen3-30b-a3b-instruct-2507-mlx",
+        api_base="http://localhost:1234/v1",  # replace with remote open-ai compatible server if necessary
+        api_key="your-api-key",  # replace with API key if necessary
+    )
 
 def weather_server_script() -> str:
     """Return an inline MCP server script that exposes a weather tool."""
@@ -55,10 +61,6 @@ def weather_server_script() -> str:
 def main() -> None:
     # Configure your inference model
     # model = InferenceClientModel()
-    model = LiteLLMModel(
-        model_id="mistral/mistral-small-latest",
-        # model_id="openai/gpt-4o-mini",
-    )
 
     # Start the Weather MCP server from an inline script in this same file
     serverparams = StdioServerParameters(command="python", args=["-c", weather_server_script()])

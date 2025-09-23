@@ -11,7 +11,13 @@ from tqdm import tqdm
 from transformers import AutoTokenizer
 
 # from langchain_openai import OpenAIEmbeddings
-from smolagents import LiteLLMModel, Tool
+from smolagents import Tool, OpenAIServerModel
+
+model = OpenAIServerModel(
+        model_id="qwen3-30b-a3b-instruct-2507-mlx",
+        api_base="http://localhost:1234/v1",  # replace with remote open-ai compatible server if necessary
+        api_key="your-api-key",  # replace with API key if necessary
+    )
 from smolagents.agents import CodeAgent
 
 
@@ -104,10 +110,7 @@ retriever_tool = RetrieverTool(vector_store)
 # model = TransformersModel(model_id="meta-llama/Llama-3.2-2B-Instruct")
 
 # For anthropic: change model_id below to 'anthropic/claude-3-5-sonnet-20240620' and also change 'os.environ.get("ANTHROPIC_API_KEY")'
-model = LiteLLMModel(
-    model_id="groq/llama-3.3-70b-versatile",
-    api_key=os.environ.get("GROQ_API_KEY"),
-)
+
 
 # # You can also use the ToolCallingAgent class
 # agent = ToolCallingAgent(
