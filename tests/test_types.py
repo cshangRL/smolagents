@@ -19,7 +19,7 @@ import uuid
 
 import PIL.Image
 
-from smolagents.agent_types import AgentAudio, AgentImage, AgentText
+from smolagents.agent_types import AgentImage, AgentText
 
 from .utils.markers import require_soundfile, require_torch
 
@@ -27,43 +27,6 @@ from .utils.markers import require_soundfile, require_torch
 def get_new_path(suffix="") -> str:
     directory = tempfile.mkdtemp()
     return os.path.join(directory, str(uuid.uuid4()) + suffix)
-
-
-@require_soundfile
-@require_torch
-class AgentAudioTests(unittest.TestCase):
-    def test_from_tensor(self):
-        import soundfile as sf
-        import torch
-
-        tensor = torch.rand(12, dtype=torch.float64) - 0.5
-        agent_type = AgentAudio(tensor)
-        path = str(agent_type.to_string())
-
-        # Ensure that the tensor and the agent_type's tensor are the same
-        self.assertTrue(torch.allclose(tensor, agent_type.to_raw(), atol=1e-4))
-
-        del agent_type
-
-        # Ensure the path remains even after the object deletion
-        self.assertTrue(os.path.exists(path))
-
-        # Ensure that the file contains the same value as the original tensor
-        new_tensor, _ = sf.read(path)
-        self.assertTrue(torch.allclose(tensor, torch.tensor(new_tensor), atol=1e-4))
-
-    def test_from_string(self):
-        import soundfile as sf
-        import torch
-
-        tensor = torch.rand(12, dtype=torch.float64) - 0.5
-        path = get_new_path(suffix=".wav")
-        sf.write(path, tensor, 16000)
-
-        agent_type = AgentAudio(path)
-
-        self.assertTrue(torch.allclose(tensor, agent_type.to_raw(), atol=1e-4))
-        self.assertEqual(agent_type.to_string(), path)
 
 
 @require_torch

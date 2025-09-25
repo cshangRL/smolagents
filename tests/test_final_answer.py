@@ -52,5 +52,4 @@ class TestFinalAnswerTool(ToolTesterMixin):
         return {
             "string": {"answer": "Text input"},
             "image": {"answer": PIL.Image.open(shared_datadir / "000000039769.png").resize((512, 512))},
-            "audio": {"answer": torch.Tensor(np.ones(3000))},
         }

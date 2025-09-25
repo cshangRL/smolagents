@@ -49,7 +49,7 @@ from ._function_type_hints_utils import (
     get_imports,
     get_json_schema,
 )
-from .agent_types import AgentAudio, AgentImage, handle_agent_input_types, handle_agent_output_types
+from .agent_types import AgentImage, handle_agent_input_types, handle_agent_output_types
 from .tool_validation import MethodChecker, validate_tool_attributes
 from .utils import (
     BASE_BUILTIN_MODULES,
@@ -723,11 +723,9 @@ class Tool(BaseTool):
                         0
                     ]  # Sometime the space also returns the generation seed, in which case the result is at index 0
                 IMAGE_EXTENTIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp"]
-                AUDIO_EXTENTIONS = [".mp3", ".wav", ".ogg", ".m4a", ".flac"]
                 if isinstance(output, str) and any([output.endswith(ext) for ext in IMAGE_EXTENTIONS]):
                     output = AgentImage(output)
-                elif isinstance(output, str) and any([output.endswith(ext) for ext in AUDIO_EXTENTIONS]):
-                    output = AgentAudio(output)
+                
                 return output
 
         return SpaceToolWrapper(

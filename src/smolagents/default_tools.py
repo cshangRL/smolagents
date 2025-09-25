@@ -622,12 +622,6 @@ class SpeechToTextTool(PipelineTool):
         cls.model_class = WhisperForConditionalGeneration
         return super().__new__(cls)
 
-    def encode(self, audio):
-        from .agent_types import AgentAudio
-
-        audio = AgentAudio(audio).to_raw()
-        return self.pre_processor(audio, return_tensors="pt")
-
     def forward(self, inputs):
         return self.model.generate(inputs["input_features"])
 
