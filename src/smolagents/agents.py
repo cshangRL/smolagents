@@ -44,7 +44,7 @@ from rich.text import Text
 if TYPE_CHECKING:
     import PIL.Image
 
-from .agent_types import AgentImage, handle_agent_output_types
+from .agent_types import handle_agent_output_types
 from .default_tools import TOOL_MAPPING, FinalAnswerTool
 from .local_python_executor import BASE_BUILTIN_MODULES, LocalPythonExecutor, PythonExecutor, fix_final_answer_code
 from .memory import (
@@ -1374,14 +1374,7 @@ class ToolCallingAgent(MultiStepAgent):
             )
             tool_call_result = self.execute_tool_call(tool_name, tool_arguments)
             tool_call_result_type = type(tool_call_result)
-            if tool_call_result_type in [AgentImage]:
-                if tool_call_result_type == AgentImage:
-                    observation_name = "image.png"
-                # TODO: tool_call_result naming could allow for different names of same type
-                self.state[observation_name] = tool_call_result
-                observation = f"Stored '{observation_name}' in memory."
-            else:
-                observation = str(tool_call_result).strip()
+            observation = str(tool_call_result).strip()
             self.logger.log(
                 f"Observations: {observation.replace('[', '|')}",  # escape potential rich-tag-like components
                 level=LogLevel.INFO,

@@ -35,7 +35,7 @@ from huggingface_hub import (
 from rich.console import Console
 
 from smolagents import EMPTY_PROMPT_TEMPLATES
-from smolagents.agent_types import AgentImage, AgentText
+from smolagents.agent_types import AgentText
 from smolagents.agents import (
     AgentError,
     AgentMaxStepsError,
@@ -423,45 +423,6 @@ class TestAgent:
         assert agent.memory.steps[0].task == "What is 2 multiplied by 3.6452?"
         assert "7.2904" in agent.memory.steps[1].observations
         assert agent.memory.steps[2].model_output == "I will return the final answer."
-
-    def test_toolcalling_agent_handles_image_tool_outputs(self, shared_datadir):
-        import PIL.Image
-
-        @tool
-        def fake_image_generation_tool(prompt: str) -> PIL.Image.Image:
-            """Tool that generates an image.
-
-            Args:
-                prompt: The prompt
-            """
-
-            import PIL.Image
-
-            return PIL.Image.open(shared_datadir / "000000039769.png")
-
-        agent = ToolCallingAgent(tools=[fake_image_generation_tool], model=FakeToolCallModelImage())
-        output = agent.run("Make me an image.")
-        assert isinstance(output, AgentImage)
-        assert isinstance(agent.state["image.png"], PIL.Image.Image)
-
-    def test_toolcalling_agent_handles_image_inputs(self, shared_datadir):
-        import PIL.Image
-
-        image = PIL.Image.open(shared_datadir / "000000039769.png")  # dummy input
-
-        @tool
-        def fake_image_understanding_tool(prompt: str, image: PIL.Image.Image) -> str:
-            """Tool that creates a caption for an image.
-
-            Args:
-                prompt: The prompt
-                image: The image
-            """
-            return "The image is a cat."
-
-        agent = ToolCallingAgent(tools=[fake_image_understanding_tool], model=FakeToolCallModelVL())
-        output = agent.run("Caption this image.", images=[image])
-        assert output == "The image is a cat."
 
     def test_fake_code_agent(self):
         agent = CodeAgent(tools=[PythonInterpreterTool()], model=FakeCodeModel(), verbosity_level=10)

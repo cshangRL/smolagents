@@ -19,7 +19,7 @@ import shutil
 from pathlib import Path
 from typing import Generator
 
-from smolagents.agent_types import AgentImage, AgentText
+from smolagents.agent_types import AgentText
 from smolagents.agents import MultiStepAgent, PlanningStep
 from smolagents.memory import ActionStep, FinalAnswerStep
 from smolagents.models import ChatMessageStreamDelta, MessageRole, agglomerate_stream_deltas
@@ -138,16 +138,6 @@ def _process_action_step(step_log: ActionStep, skip_model_outputs: bool = False)
                 metadata={"title": "📝 Execution Logs", "status": "done"},
             )
 
-    # Display any images in observations
-    if getattr(step_log, "observations_images", []):
-        for image in step_log.observations_images:
-            path_image = AgentImage(image).to_string()
-            yield gr.ChatMessage(
-                role=MessageRole.ASSISTANT,
-                content={"path": path_image, "mime_type": f"image/{path_image.split('.')[-1]}"},
-                metadata={"title": "🖼️ Output Image", "status": "done"},
-            )
-
     # Handle errors
     if getattr(step_log, "error", None):
         yield gr.ChatMessage(
@@ -203,12 +193,6 @@ def _process_final_answer_step(step_log: FinalAnswerStep) -> Generator:
         yield gr.ChatMessage(
             role=MessageRole.ASSISTANT,
             content=f"**Final answer:**\n{final_answer.to_string()}\n",
-            metadata={"status": "done"},
-        )
-    elif isinstance(final_answer, AgentImage):
-        yield gr.ChatMessage(
-            role=MessageRole.ASSISTANT,
-            content={"path": final_answer.to_string(), "mime_type": "image/png"},
             metadata={"status": "done"},
         )
     else:

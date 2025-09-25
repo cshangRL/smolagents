@@ -114,43 +114,6 @@ class MonitoringTester(unittest.TestCase):
         self.assertEqual(final_message.role, "assistant")
         self.assertIn("This is the final answer.", final_message.content)
 
-    def test_streaming_agent_image_output(self):
-        class FakeLLMModelImage(Model):
-            def generate(self, prompt, **kwargs):
-                return ChatMessage(
-                    role=MessageRole.ASSISTANT,
-                    content="I will call the final_answer tool.",
-                    tool_calls=[
-                        ChatMessageToolCall(
-                            id="fake_id",
-                            type="function",
-                            function=ChatMessageToolCallFunction(name="final_answer", arguments={"answer": "image"}),
-                        )
-                    ],
-                )
-
-        agent = ToolCallingAgent(
-            tools=[],
-            model=FakeLLMModelImage(),
-            max_steps=1,
-            verbosity_level=100,
-        )
-
-        # Use stream_to_gradio to capture the output
-        outputs = list(
-            stream_to_gradio(
-                agent,
-                task="Test task",
-                additional_args=dict(image=PIL.Image.new("RGB", (100, 100))),
-            )
-        )
-
-        self.assertEqual(len(outputs), 7)
-        final_message = outputs[-1]
-        self.assertEqual(final_message.role, "assistant")
-        self.assertIsInstance(final_message.content, dict)
-        self.assertEqual(final_message.content["mime_type"], "image/png")
-
     def test_streaming_with_agent_error(self):
         class DummyModel(Model):
             def generate(self, prompt, **kwargs):

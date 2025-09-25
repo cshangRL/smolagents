@@ -70,109 +70,7 @@ class AgentText(AgentType, str):
     def to_string(self):
         return str(self._value)
 
-
-class AgentImage(AgentType, PIL.Image.Image):
-    """
-    Image type returned by the agent. Behaves as a PIL.Image.Image.
-    """
-
-    def __init__(self, value):
-        AgentType.__init__(self, value)
-        PIL.Image.Image.__init__(self)
-
-        self._path = None
-        self._raw = None
-        self._tensor = None
-
-        if isinstance(value, AgentImage):
-            self._raw, self._path, self._tensor = value._raw, value._path, value._tensor
-        elif isinstance(value, PIL.Image.Image):
-            self._raw = value
-        elif isinstance(value, bytes):
-            self._raw = PIL.Image.open(BytesIO(value))
-        elif isinstance(value, (str, pathlib.Path)):
-            self._path = value
-        else:
-            try:
-                import torch
-
-                if isinstance(value, torch.Tensor):
-                    self._tensor = value
-                import numpy as np
-
-                if isinstance(value, np.ndarray):
-                    self._tensor = torch.from_numpy(value)
-            except ModuleNotFoundError:
-                pass
-
-        if self._path is None and self._raw is None and self._tensor is None:
-            raise TypeError(f"Unsupported type for {self.__class__.__name__}: {type(value)}")
-
-    def _ipython_display_(self, include=None, exclude=None):
-        """
-        Displays correctly this type in an ipython notebook (ipython, colab, jupyter, ...)
-        """
-        from IPython.display import Image, display
-
-        display(Image(self.to_string()))
-
-    def to_raw(self):
-        """
-        Returns the "raw" version of that object. In the case of an AgentImage, it is a PIL.Image.Image.
-        """
-        if self._raw is not None:
-            return self._raw
-
-        if self._path is not None:
-            self._raw = PIL.Image.open(self._path)
-            return self._raw
-
-        if self._tensor is not None:
-            import numpy as np
-
-            array = self._tensor.cpu().detach().numpy()
-            return PIL.Image.fromarray((255 - array * 255).astype(np.uint8))
-
-    def to_string(self):
-        """
-        Returns the stringified version of that object. In the case of an AgentImage, it is a path to the serialized
-        version of the image.
-        """
-        if self._path is not None:
-            return self._path
-
-        if self._raw is not None:
-            directory = tempfile.mkdtemp()
-            self._path = os.path.join(directory, str(uuid.uuid4()) + ".png")
-            self._raw.save(self._path, format="png")
-            return self._path
-
-        if self._tensor is not None:
-            import numpy as np
-
-            array = self._tensor.cpu().detach().numpy()
-
-            # There is likely simpler than load into image into save
-            img = PIL.Image.fromarray((255 - array * 255).astype(np.uint8))
-
-            directory = tempfile.mkdtemp()
-            self._path = os.path.join(directory, str(uuid.uuid4()) + ".png")
-            img.save(self._path, format="png")
-
-            return self._path
-
-    def save(self, output_bytes, format: str = None, **params):
-        """
-        Saves the image to a file.
-        Args:
-            output_bytes (bytes): The output bytes to save the image to.
-            format (str): The format to use for the output image. The format is the same as in PIL.Image.save.
-            **params: Additional parameters to pass to PIL.Image.save.
-        """
-        img = self.to_raw()
-        img.save(output_bytes, format=format, **params)
-
-_AGENT_TYPE_MAPPING = {"string": AgentText, "image": AgentImage}
+_AGENT_TYPE_MAPPING = {"string": AgentText}
 
 
 def handle_agent_input_types(*args, **kwargs):
@@ -190,10 +88,8 @@ def handle_agent_output_types(output: Any, output_type: str | None = None) -> An
     # If the class does not have defined output, then we map according to the type
     if isinstance(output, str):
         return AgentText(output)
-    if isinstance(output, PIL.Image.Image):
-        return AgentImage(output)
 
     return output
 
 
-__all__ = ["AgentType", "AgentImage", "AgentText"]
+__all__ = ["AgentType", "AgentText"]

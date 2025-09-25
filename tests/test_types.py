@@ -19,7 +19,7 @@ import uuid
 
 import PIL.Image
 
-from smolagents.agent_types import AgentImage, AgentText
+from smolagents.agent_types import AgentText
 
 from .utils.markers import require_soundfile, require_torch
 
@@ -27,49 +27,6 @@ from .utils.markers import require_soundfile, require_torch
 def get_new_path(suffix="") -> str:
     directory = tempfile.mkdtemp()
     return os.path.join(directory, str(uuid.uuid4()) + suffix)
-
-
-@require_torch
-class TestAgentImage:
-    def test_from_tensor(self):
-        import torch
-
-        tensor = torch.randint(0, 256, (64, 64, 3))
-        agent_type = AgentImage(tensor)
-        path = str(agent_type.to_string())
-
-        # Ensure that the tensor and the agent_type's tensor are the same
-        assert torch.allclose(tensor, agent_type._tensor, atol=1e-4)
-
-        assert isinstance(agent_type.to_raw(), PIL.Image.Image)
-
-        # Ensure the path remains even after the object deletion
-        del agent_type
-        assert os.path.exists(path)
-
-    def test_from_string(self, shared_datadir):
-        path = shared_datadir / "000000039769.png"
-        image = PIL.Image.open(path)
-        agent_type = AgentImage(path)
-
-        assert path.samefile(agent_type.to_string())
-        assert image == agent_type.to_raw()
-
-        # Ensure the path remains even after the object deletion
-        del agent_type
-        assert os.path.exists(path)
-
-    def test_from_image(self, shared_datadir):
-        path = shared_datadir / "000000039769.png"
-        image = PIL.Image.open(path)
-        agent_type = AgentImage(image)
-
-        assert not path.samefile(agent_type.to_string())
-        assert image == agent_type.to_raw()
-
-        # Ensure the path remains even after the object deletion
-        del agent_type
-        assert os.path.exists(path)
 
 
 class AgentTextTests(unittest.TestCase):

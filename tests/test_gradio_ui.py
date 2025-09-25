@@ -21,7 +21,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from smolagents.agent_types import AgentImage, AgentText
+from smolagents.agent_types import AgentText
 from smolagents.gradio_ui import GradioUI, pull_messages_from_step, stream_to_gradio
 from smolagents.memory import ActionStep, FinalAnswerStep, PlanningStep, ToolCall
 from smolagents.models import ChatMessageStreamDelta
@@ -287,21 +287,6 @@ class TestPullMessagesFromStep:
         assert error_message is not None
         assert "This is an error message" in error_message.content
 
-    def test_action_step_with_images(self):
-        """Test ActionStep with observation images."""
-        step = ActionStep(
-            step_number=4,
-            observations_images=["image1.png", "image2.jpg"],
-            token_usage=TokenUsage(input_tokens=100, output_tokens=200),
-            timing=Timing(start_time=1.0, end_time=2.0),
-        )
-        with patch("smolagents.gradio_ui.AgentImage") as mock_agent_image:
-            mock_agent_image.return_value.to_string.side_effect = lambda: "path/to/image.png"
-            messages = list(pull_messages_from_step(step))
-            image_messages = [m for m in messages if "image" in str(m).lower()]
-            assert len(image_messages) == 2
-            assert "path/to/image.png" in str(image_messages[0])
-
     @pytest.mark.parametrize(
         "skip_model_outputs, expected_messages_length, token_usage",
         [(False, 4, TokenUsage(input_tokens=80, output_tokens=30)), (True, 2, None)],
@@ -350,14 +335,6 @@ class TestPullMessagesFromStep:
         assert len(messages) == 1
         assert messages[0].content == expected_content
 
-    def test_final_answer_step_image(self):
-        """Test FinalAnswerStep with image answer."""
-        with patch.object(AgentImage, "to_string", return_value="path/to/image.png"):
-            step = FinalAnswerStep(output=AgentImage("path/to/image.png"))
-            messages = list(pull_messages_from_step(step))
-            assert len(messages) == 1
-            assert messages[0].content["path"] == "path/to/image.png"
-            assert messages[0].content["mime_type"] == "image/png"
 
 
     def test_unsupported_step_type(self):
