@@ -1677,7 +1677,5 @@ __all__ = [
     "OpenAIServerModel",
     "OpenAIModel",
     "VLLMModel",
-    #"AzureOpenAIServerModel",
-    #"AzureOpenAIModel",
     "ChatMessage",
 ]

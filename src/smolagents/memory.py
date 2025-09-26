@@ -70,20 +70,14 @@ class ActionStep(MemoryStep):
             "timing": self.timing.dict(),
             "model_input_messages": [
                 make_json_serializable(get_dict_from_nested_dataclasses(msg)) for msg in self.model_input_messages
-            ]
-            if self.model_input_messages
-            else None,
+            ] if self.model_input_messages else None,
             "tool_calls": [tc.dict() for tc in self.tool_calls] if self.tool_calls else [],
             "error": self.error.dict() if self.error else None,
-            "model_output_message": make_json_serializable(get_dict_from_nested_dataclasses(self.model_output_message))
-            if self.model_output_message
-            else None,
+            "model_output_message": make_json_serializable(get_dict_from_nested_dataclasses(self.model_output_message)) if self.model_output_message else None,
             "model_output": self.model_output,
             "code_action": self.code_action,
             "observations": self.observations,
-            "observations_images": [image.tobytes() for image in self.observations_images]
-            if self.observations_images
-            else None,
+            "observations_images": [image.tobytes() for image in self.observations_images] if self.observations_images else None,
             "action_output": make_json_serializable(self.action_output),
             "token_usage": asdict(self.token_usage) if self.token_usage else None,
             "is_final_answer": self.is_final_answer,
@@ -93,7 +87,13 @@ class ActionStep(MemoryStep):
         messages = []
         if self.model_output is not None and not summary_mode:
             messages.append(
-                ChatMessage(role=MessageRole.ASSISTANT, content=[{"type": "text", "text": self.model_output.strip()}])
+                ChatMessage(
+                    role = MessageRole.ASSISTANT, 
+                    content = [{
+                        "type": "text", 
+                        "text": self.model_output.strip()
+                    }]
+                )
             )
 
         if self.tool_calls is not None:

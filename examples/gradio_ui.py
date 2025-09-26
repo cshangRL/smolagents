@@ -1,9 +1,15 @@
-from smolagents import CodeAgent, GradioUI, InferenceClientModel, WebSearchTool
+from smolagents import CodeAgent, GradioUI, WebSearchTool, OpenAIServerModel
+
+model = OpenAIServerModel(
+        model_id="qwen3-30b-a3b-instruct-2507-mlx",
+        api_base="http://localhost:1234/v1",  # replace with remote open-ai compatible server if necessary
+        api_key="your-api-key",  # replace with API key if necessary
+    )
 
 
 agent = CodeAgent(
     tools=[WebSearchTool()],
-    model=InferenceClientModel(model_id="meta-llama/Llama-3.3-70B-Instruct", provider="fireworks-ai"),
+    model=model,
     verbosity_level=1,
     planning_interval=3,
     name="example_agent",

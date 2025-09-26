@@ -206,10 +206,6 @@ class RunResult:
         steps (list[dict]): The agent's memory, as a list of steps.
         token_usage (TokenUsage | None): Count of tokens used during the run.
         timing (Timing): Timing details of the agent run: start time, end time, duration.
-        messages (list[dict]): The agent's memory, as a list of messages.
-            <Deprecated version="1.22.0">
-            Parameter 'messages' is deprecated and will be removed in version 1.25. Please use 'steps' instead.
-            </Deprecated>
     """
 
     output: Any | None
@@ -218,34 +214,13 @@ class RunResult:
     token_usage: TokenUsage | None
     timing: Timing
 
-    def __init__(self, output=None, state=None, steps=None, token_usage=None, timing=None, messages=None):
-        # Handle deprecated 'messages' parameter
-        if messages is not None:
-            if steps is not None:
-                raise ValueError("Cannot specify both 'messages' and 'steps' parameters. Use 'steps' instead.")
-            warnings.warn(
-                "Parameter 'messages' is deprecated and will be removed in version 1.25. Please use 'steps' instead.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            steps = messages
-
+    def __init__(self, output=None, state=None, steps=None, token_usage=None, timing=None):
         # Initialize with dataclass fields
         self.output = output
         self.state = state
         self.steps = steps
         self.token_usage = token_usage
         self.timing = timing
-
-    @property
-    def messages(self):
-        """Backward compatibility property that returns steps."""
-        warnings.warn(
-            "Parameter 'messages' is deprecated and will be removed in version 1.25. Please use 'steps' instead.",
-            FutureWarning,
-            stacklevel=2,
-        )
-        return self.steps
 
     def dict(self):
         return {

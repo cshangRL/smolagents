@@ -803,33 +803,6 @@ class TestRunResult:
         )
         assert result1.steps == [{"type": "test", "content": "step1"}]
 
-        # Test property access warning
-        with pytest.warns(FutureWarning, match="deprecated"):
-            messages = result1.messages
-        assert messages == [{"type": "test", "content": "step1"}]
-
-        # Test 2: Using deprecated 'messages' parameter (should show deprecation warning)
-        with pytest.warns(FutureWarning, match="deprecated"):
-            result2 = RunResult(
-                output="test output",
-                state="success",
-                messages=[{"type": "test", "content": "message1"}],
-                token_usage=None,
-                timing=Timing(start_time=0.0, end_time=1.0),
-            )
-        assert result2.steps == [{"type": "test", "content": "message1"}]
-
-        # Test 3: Using both 'steps' and 'messages' (should raise ValueError)
-        with pytest.raises(ValueError, match="Cannot specify both"):
-            RunResult(
-                output="test output",
-                state="success",
-                steps=[{"type": "test", "content": "step1"}],
-                messages=[{"type": "test", "content": "message1"}],
-                token_usage=None,
-                timing=Timing(start_time=0.0, end_time=1.0),
-            )
-
     @pytest.mark.parametrize("agent_class", [CodeAgent, ToolCallingAgent])
     def test_no_token_usage(self, agent_class):
         agent = agent_class(
