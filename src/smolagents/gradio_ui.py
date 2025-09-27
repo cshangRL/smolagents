@@ -369,7 +369,7 @@ class GradioUI:
             gr.Button(interactive=False),
         )
 
-    def launch(self, share: bool = True, **kwargs):
+    def launch(self, share: bool = False, **kwargs):
         """
         Launch the Gradio app with the agent interface.
 
