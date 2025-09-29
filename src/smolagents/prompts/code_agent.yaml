@@ -175,7 +175,9 @@ system_prompt: |-
 planning:
   initial_plan : |-
     You are a world expert at analyzing a situation to derive facts, and plan accordingly towards solving a task.
-    Below I will present you a task. You will need to 1. build a survey of facts known or needed to solve the task, then 2. make a plan of action to solve the task.
+    Below I will present you a task. You will need to 
+      1. build a survey of facts known or needed to solve the task, 
+      then 2. make a plan of action to solve the task.
 
     ## 1. Facts survey
     You will build a comprehensive preparatory survey of which facts we have at our disposal and which ones we still need.

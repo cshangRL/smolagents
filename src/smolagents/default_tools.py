@@ -603,32 +603,6 @@ class WikipediaSearchTool(Tool):
             return f"Error fetching Wikipedia summary: {str(e)}"
 
 
-class SpeechToTextTool(PipelineTool):
-    default_checkpoint = "openai/whisper-large-v3-turbo"
-    description = "This is a tool that transcribes an audio into text. It returns the transcribed text."
-    name = "transcriber"
-    inputs = {
-        "audio": {
-            "type": "audio",
-            "description": "The audio to transcribe. Can be a local path, an url, or a tensor.",
-        }
-    }
-    output_type = "string"
-
-    def __new__(cls, *args, **kwargs):
-        from transformers.models.whisper import WhisperForConditionalGeneration, WhisperProcessor
-
-        cls.pre_processor_class = WhisperProcessor
-        cls.model_class = WhisperForConditionalGeneration
-        return super().__new__(cls)
-
-    def forward(self, inputs):
-        return self.model.generate(inputs["input_features"])
-
-    def decode(self, outputs):
-        return self.pre_processor.batch_decode(outputs, skip_special_tokens=True)[0]
-
-
 TOOL_MAPPING = {
     tool_class.name: tool_class
     for tool_class in [
@@ -648,5 +622,4 @@ __all__ = [
     "GoogleSearchTool",
     "VisitWebpageTool",
     "WikipediaSearchTool",
-    "SpeechToTextTool",
 ]
